@@ -27,6 +27,7 @@ import com.neohope.zk.demo.utils.RecoveredAssignments;
 import com.neohope.zk.demo.utils.ZkTask;
 
 /**
+ * Master的异步版本
  * 1、竞选Master，如果没有被选上，则等待被选上
  * 2、如果选上了，则初始化节点，重新分配任务，并监听每个节点的变化
  * 3、Task节点变化时，尝试分配任务，初始化任务状态
@@ -415,7 +416,7 @@ class MasterAsync implements Watcher, Closeable{
 			workersCache=new ChildrenCache(children);
 			toProcess=null;
 		}else{
-			toProcess=workersCache.removeAndSet(children);
+			toProcess=workersCache.setAndGetOnlyInOld(children);
 		}
 		
 		if(toProcess!=null){
@@ -544,7 +545,7 @@ class MasterAsync implements Watcher, Closeable{
                     
                     toProcess = children;
                 } else {
-                    toProcess = tasksCache.addAndSet(children);
+                    toProcess = tasksCache.setAndGetBothOldAndNew(children);
                 }
                 
                 if(toProcess != null){
