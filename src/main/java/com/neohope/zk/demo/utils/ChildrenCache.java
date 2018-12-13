@@ -27,18 +27,14 @@ public class ChildrenCache {
      * 旧数据+新数据中有但旧数据中没有的
      */
     public List<String> setAndGetBothOldAndNew( List<String> newChildren) {
-        ArrayList<String> diff = null;
+        ArrayList<String> diff = new ArrayList<String>(newChildren);
         
-        if(children == null) {
-            diff = new ArrayList<String>(newChildren);
-        } else {
-            for(String s: newChildren) {
-                if(!children.contains( s )) {
-                    if(diff == null) {
-                        diff = new ArrayList<String>();
-                    }
-                    diff.add(s);
+        for(String s: newChildren) {
+            if(!children.contains( s )) {
+                if(diff == null) {
+                    diff = new ArrayList<String>();
                 }
+                diff.add(s);
             }
         }
         this.children = newChildren;

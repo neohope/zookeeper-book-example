@@ -110,7 +110,7 @@ class MasterSync implements Watcher, Closeable{
 			if(e.getPath().startsWith("/master")){
 				processMaster(e);
 			}
-			else if(e.getPath().startsWith("/works")){
+			else if(e.getPath().startsWith("/workers")){
 				processWorkers(e);
 			}
 			else if(e.getPath().startsWith("/tasks")){

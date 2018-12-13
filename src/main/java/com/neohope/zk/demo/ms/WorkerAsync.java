@@ -170,7 +170,7 @@ class WorkerAsync implements Watcher, Closeable{
 	
 	synchronized private void updateStatus(String status){
 		if(status==this.status){
-			zk.setData("/works/"+workerId, status.getBytes(), -1, statusUpdateCallback, status);
+			zk.setData("/workers/"+workerId, status.getBytes(), -1, statusUpdateCallback, status);
 		}
 	}
 	

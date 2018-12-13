@@ -80,7 +80,7 @@ class MasterAsync implements Watcher, Closeable{
 	 * 竞选到Master之后，初始化系统所需节点
 	 */
 	private void initNode(byte[] data) throws InterruptedException{
-		zk.create("/workers", data, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT,initNodeCallback, null);
+		zk.create("/workers", data, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT, initNodeCallback, null);
 		zk.create("/tasks", data, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT, initNodeCallback, null);
 		zk.create("/status", data, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT, initNodeCallback, null);
 		zk.create("/assign", data, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT, initNodeCallback, null);
@@ -116,7 +116,7 @@ class MasterAsync implements Watcher, Closeable{
 	private void runForMaster() throws InterruptedException{
 		zk.create("/master", serverId.getBytes(), Ids.OPEN_ACL_UNSAFE, 
 				CreateMode.EPHEMERAL, masterCreateCallback, null);
-		if(!isLeader)initNode(new byte[0]);
+		if(isLeader)initNode(new byte[0]);
 	}
 	
 	StringCallback masterCreateCallback = new StringCallback() {
@@ -262,7 +262,7 @@ class MasterAsync implements Watcher, Closeable{
 			if(e.getPath().startsWith("/master")){
 				processMaster(e);
 			}
-			else if(e.getPath().startsWith("/works")){
+			else if(e.getPath().startsWith("/workers")){
 				processWorkers(e);
 			}
 			else if(e.getPath().startsWith("/tasks")){
@@ -424,6 +424,8 @@ class MasterAsync implements Watcher, Closeable{
 				getAbsentWorkerTasks(worker);
 			}
 		}
+		
+		getTasks();
 	}
 	
 	/**
@@ -542,7 +544,6 @@ class MasterAsync implements Watcher, Closeable{
 				List<String> toProcess;
                 if(tasksCache == null) {
                     tasksCache = new ChildrenCache(children);
-                    
                     toProcess = children;
                 } else {
                     toProcess = tasksCache.setAndGetBothOldAndNew(children);

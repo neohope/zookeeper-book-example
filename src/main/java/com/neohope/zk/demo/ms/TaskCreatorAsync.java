@@ -19,7 +19,6 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.AsyncCallback.DataCallback;
 import org.apache.zookeeper.AsyncCallback.StatCallback;
 import org.apache.zookeeper.AsyncCallback.StringCallback;
-import org.apache.zookeeper.AsyncCallback.VoidCallback;
 
 /**
  * TaskCreator的异步版本
@@ -160,10 +159,7 @@ class TaskCreatorAsync implements Watcher, Closeable{
                 break;
             case OK:
                 String taskResult = new String(data);
-                logger.info("Task " + path + ", " + taskResult);
-
-                assert(ctx != null);
-                zk.delete(path, -1, taskDeleteCallback, null);
+                logger.info("Task " + path + ": status" + taskResult);
                 ctxMap.remove(path);
                 break;
             case NONODE:
@@ -175,31 +171,18 @@ class TaskCreatorAsync implements Watcher, Closeable{
             }
         }
     };
-    
-    /**
-	 * 监视任务删除
-	 */
-    VoidCallback taskDeleteCallback = new VoidCallback(){
-        public void processResult(int rc, String path, Object ctx){
-            switch (Code.get(rc)) {
-            case CONNECTIONLOSS:
-                zk.delete(path, -1, taskDeleteCallback, null);
-                break;
-            case OK:
-                logger.info("Successfully deleted " + path);
-                break;
-            default:
-            	logger.error("taskDeleteCallback Unsported OP");
-				break;  
-            }
-        }
-    };
 	
 	public static void main(String args[]) throws IOException {
 		TaskCreatorAsync m=new TaskCreatorAsync("localhost:2181");
 		m.startZk();
-		m.submitTask("T"+m.rand.nextInt());
-		logger.info(">>>>>>new task created");
+		for(int i=0;i<10;i++){
+			m.submitTask("T"+m.rand.nextInt());
+			logger.info(">>>>>>new task created");
+		}
+		
+		logger.info(">>>>>>TaskCreator started, press enter to exit");
+		System.in.read();
+		logger.info(">>>>>>TaskCreator ended");
 		m.close();
 	}	
 	

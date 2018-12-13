@@ -120,11 +120,8 @@ public class RecoveredAssignments {
                 break;
             case OK:
                 logger.info("Getting worker assignments for recovery: " + children.size());
-                if(children.size() == 0) {
+                if(children.size()==0) {
                     logger.warn( "Empty list of workers, possibly just starting" );
-                    //处理完毕，调用回调函数
-                    cb.recoveryComplete(IRecoveryCallback.OK, new ArrayList<String>());
-                    break;
                 }
                 
                 activeWorkers = children;
@@ -159,14 +156,16 @@ public class RecoveredAssignments {
                 if(activeWorkers.contains(worker)) {
                     assignments.addAll(children);
                 } else {
-                    for( String task : children ) {
-                        if(!tasks.contains( task )) {
-                            tasks.add( task );
-                            getDataReassign( path, task );
-                        } else {
-                            deleteAssignment(path + "/" + task);
-                        }
-                        deleteAssignment(path);
+                	if(children.size()==0)deleteAssignment(path);
+                	else {
+                		for( String task : children ) {
+	                        if(!tasks.contains( task )) {
+	                            tasks.add( task );
+	                            getDataReassign( path, task );
+	                        } else {
+	                            deleteAssignment(path + "/" + task);
+	                        }
+                		}
                     }
                 }
                    
@@ -226,7 +225,7 @@ public class RecoveredAssignments {
                 recreateTask((ZkTask) ctx);
                 break;
             case OK:
-                deleteAssignment(((ZkTask) ctx).path);
+                deleteAssignment(((ZkTask)ctx).path+"/"+((ZkTask)ctx).task);
                 break;
             case NODEEXISTS:
                 logger.warn("Node shouldn't exist: " + path);
@@ -242,10 +241,10 @@ public class RecoveredAssignments {
      * 删除任务分配，删除任务状态
      */
     void deleteAssignment(String path){
-        zk.delete(path, -1, taskDeletionCallback, null);
+        zk.delete(path, -1, assignDeletionCallback, null);
     }
     
-    VoidCallback taskDeletionCallback = new VoidCallback(){
+    VoidCallback assignDeletionCallback = new VoidCallback(){
         public void processResult(int rc, String path, Object rtx){
             switch(Code.get(rc)) {
             case CONNECTIONLOSS:
@@ -255,12 +254,11 @@ public class RecoveredAssignments {
                 logger.info("Task correctly deleted: " + path);
                 break;
             default:
-                logger.error("Failed to delete task data" + 
+                logger.error("Failed to delete assign data" + 
                         KeeperException.create(Code.get(rc), path));
             } 
         }
     };
-    
     
     /**
      * 获取任务状态status
@@ -295,16 +293,19 @@ public class RecoveredAssignments {
      */
     private void processAssignments(){
         logger.info("Size of tasks: " + tasks.size());
+        
+        //删除已分配任务
         for(String s: assignments){
             logger.info("Assignment: " + s);
-            deleteAssignment("/tasks/" + s);
+            deleteTask("/tasks/" + s);
             tasks.remove(s);
         }
         
+        //删除已完成的任务
         logger.info("Size of tasks after assignment filtering: " + tasks.size());
         for(String s: status){
             logger.info( "Checking task: {} ", s );
-            deleteAssignment("/tasks/" + s);
+            deleteTask("/tasks/" + s);
             tasks.remove(s);
         }
         logger.info("Size of tasks after status filtering: " + tasks.size());
@@ -312,5 +313,27 @@ public class RecoveredAssignments {
         // 处理成功，回调返回
         cb.recoveryComplete(IRecoveryCallback.OK, tasks);     
     }
+    
+    /**
+     * 删除任务
+     */
+    void deleteTask(String path){
+        zk.delete(path, -1, taskDeletionCallback, null);
+    }
+    
+    VoidCallback taskDeletionCallback = new VoidCallback(){
+        public void processResult(int rc, String path, Object rtx){
+            switch(Code.get(rc)) {
+            case CONNECTIONLOSS:
+                deleteAssignment(path);
+                break;
+            case OK:
+                logger.info("Task correctly deleted: " + path);
+                break;
+            default:
+                logger.error("Failed to delete task data" + KeeperException.create(Code.get(rc), path));
+            } 
+        }
+    };
 }
 
