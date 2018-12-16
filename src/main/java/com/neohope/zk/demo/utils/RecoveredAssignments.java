@@ -125,8 +125,13 @@ public class RecoveredAssignments {
                 }
                 
                 activeWorkers = children;
-                for(String s : assignedWorkers){
-                    getWorkerAssignments("/assign/" + s);
+                if(assignedWorkers.size()==0){
+                	cb.recoveryComplete(IRecoveryCallback.OK, tasks);    
+                }
+                else{
+	                for(String s : assignedWorkers){
+	                    getWorkerAssignments("/assign/" + s);
+	                }
                 }
                 
                 break;
