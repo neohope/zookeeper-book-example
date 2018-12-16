@@ -29,7 +29,7 @@ class MasterSync implements Watcher, Closeable{
 	
 	boolean isLeader=false;
 	Random rand=new Random();
-	String serverId=rand.nextLong()+"";
+	String masterId=rand.nextLong()+"";
 	
 	MasterSync(String address){
 		this.address=address;
@@ -54,7 +54,7 @@ class MasterSync implements Watcher, Closeable{
 	private void runForMaster() throws InterruptedException
 	{
 		try {
-			zk.create("/master", serverId.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+			zk.create("/master", masterId.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 		} catch (KeeperException e) {
 			logger.warn(e.getMessage());
 		}
@@ -66,7 +66,7 @@ class MasterSync implements Watcher, Closeable{
 		try {
 			Stat stat = new Stat();
 			byte [] masterData = zk.getData("/master", false, stat);
-			isLeader = new String(masterData).equals(serverId);
+			isLeader = new String(masterData).equals(masterId);
 		} catch (KeeperException | InterruptedException e) {
 			logger.warn(e.getMessage());
 			isLeader=false;

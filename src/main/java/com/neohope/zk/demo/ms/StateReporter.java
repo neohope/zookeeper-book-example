@@ -25,7 +25,7 @@ class StateReporter implements Watcher, Closeable{
 	String address;
 	
 	Random rand=new Random();
-	String clientId=rand.nextLong()+"";
+	String reporterId=rand.nextLong()+"";
 	
 	StateReporter(String address){
 		this.address=address;

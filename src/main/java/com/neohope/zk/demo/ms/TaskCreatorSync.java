@@ -27,7 +27,7 @@ class TaskCreatorSync implements Watcher, Closeable{
 	String address;
 	
 	Random rand=new Random();
-	String clientId=rand.nextLong()+"";
+	String creatorId=rand.nextLong()+"";
 	
 	TaskCreatorSync(String address){
 		this.address=address;

@@ -35,7 +35,7 @@ class TaskCreatorAsync implements Watcher, Closeable{
     volatile boolean expired = false;
 	
 	Random rand=new Random();
-	String clientId=rand.nextLong()+"";
+	String creatorId=rand.nextLong()+"";
 	
 	ConcurrentHashMap<String, Object> ctxMap = new ConcurrentHashMap<>();
 	
@@ -175,7 +175,7 @@ class TaskCreatorAsync implements Watcher, Closeable{
 	public static void main(String args[]) throws IOException {
 		TaskCreatorAsync m=new TaskCreatorAsync("localhost:2181");
 		m.startZk();
-		for(int i=0;i<10;i++){
+		for(int i=0;i<3;i++){
 			m.submitTask("T"+m.rand.nextInt());
 			logger.info(">>>>>>new task created");
 		}

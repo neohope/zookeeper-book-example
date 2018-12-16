@@ -39,7 +39,7 @@ class MasterAsync implements Watcher, Closeable{
 	private final static Logger logger = LoggerFactory.getLogger(MasterAsync.class);
 	
 	Random rand=new Random();
-	String serverId="master"+rand.nextLong();
+	String masterId="master"+rand.nextLong();
 	
 	ZooKeeper zk;
 	String address;
@@ -114,7 +114,7 @@ class MasterAsync implements Watcher, Closeable{
 	 * 竞选Master，如果没有选上，就等待master节点消失，再选
 	 */
 	private void runForMaster() throws InterruptedException{
-		zk.create("/master", serverId.getBytes(), Ids.OPEN_ACL_UNSAFE, 
+		zk.create("/master", masterId.getBytes(), Ids.OPEN_ACL_UNSAFE, 
 				CreateMode.EPHEMERAL, masterCreateCallback, null);
 		if(isLeader)initNode(new byte[0]);
 	}
@@ -138,7 +138,7 @@ class MasterAsync implements Watcher, Closeable{
             	logger.warn("masterCreateCallback is wrong:" + Code.get(rc)+" "+path);
             }
             
-            logger.info("I'm " + (isLeader? "" : "not ") + "the leader " + serverId);
+            logger.info("I'm " + (isLeader? "" : "not ") + "the leader " + masterId);
         }
     };
 	
@@ -221,7 +221,7 @@ class MasterAsync implements Watcher, Closeable{
 				waitToBeMaster();
 				break;
 			case OK:
-				if( serverId.equals( new String(data) ) ) {
+				if( masterId.equals( new String(data) ) ) {
 					isLeader=true;
                     takeLeadership();
                 } else {
