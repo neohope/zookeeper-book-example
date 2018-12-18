@@ -1,6 +1,7 @@
 .idea/
 .settings/
 /target/
+version-2/
 .classpath
 .project
 *.log
